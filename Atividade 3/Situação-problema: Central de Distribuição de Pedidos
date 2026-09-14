@@ -1,0 +1,451 @@
+Critério de contagem adotado:
+
+Comparação: cada vez que o algoritmo verifica se um elemento é maior, menor ou igual a outro.
+Troca: conta 1 operação quando dois elementos são trocados de posição.
+Movimentação no Insertion e Quick: cada atribuição que desloca ou reposiciona um elemento é contabilizada como uma movimentação.
+Como o número exato de operações depende da implementação e da semente dos números aleatórios, o programa abaixo gera os valores reais ao ser executado, em vez de inventar resultados.
+
+Código completo
+import random
+
+
+# ============================================================
+# BUBBLE SORT
+# ============================================================
+def bubble_sort(vetor):
+    comparacoes = 0
+    trocas = 0
+
+    n = len(vetor)
+
+    for i in range(n - 1):
+        houve_troca = False
+
+        for j in range(n - 1 - i):
+            comparacoes += 1
+
+            if vetor[j] > vetor[j + 1]:
+                vetor[j], vetor[j + 1] = vetor[j + 1], vetor[j]
+                trocas += 1
+                houve_troca = True
+
+        if not houve_troca:
+            break
+
+    return comparacoes, trocas
+
+
+# ============================================================
+# INSERTION SORT
+# ============================================================
+def insertion_sort(vetor):
+    comparacoes = 0
+    movimentacoes = 0
+
+    for i in range(1, len(vetor)):
+        chave = vetor[i]
+        j = i - 1
+
+        while j >= 0:
+            comparacoes += 1
+
+            if vetor[j] > chave:
+                vetor[j + 1] = vetor[j]
+                movimentacoes += 1
+                j -= 1
+            else:
+                break
+
+        # Colocação da chave em sua posição
+        vetor[j + 1] = chave
+        movimentacoes += 1
+
+    return comparacoes, movimentacoes
+
+
+# ============================================================
+# SELECTION SORT
+# ============================================================
+def selection_sort(vetor):
+    comparacoes = 0
+    trocas = 0
+
+    n = len(vetor)
+
+    for i in range(n - 1):
+        menor = i
+
+        for j in range(i + 1, n):
+            comparacoes += 1
+
+            if vetor[j] < vetor[menor]:
+                menor = j
+
+        if menor != i:
+            vetor[i], vetor[menor] = vetor[menor], vetor[i]
+            trocas += 1
+
+    return comparacoes, trocas
+
+
+# ============================================================
+# QUICK SORT
+# ============================================================
+def quick_sort(vetor):
+    comparacoes = 0
+    movimentacoes = 0
+
+    def particionar(esquerda, direita):
+        nonlocal comparacoes, movimentacoes
+
+        pivo = vetor[direita]
+        i = esquerda - 1
+
+        for j in range(esquerda, direita):
+            comparacoes += 1
+
+            if vetor[j] <= pivo:
+                i += 1
+
+                if i != j:
+                    vetor[i], vetor[j] = vetor[j], vetor[i]
+                    movimentacoes += 1
+
+        if i + 1 != direita:
+            vetor[i + 1], vetor[direita] = (
+                vetor[direita],
+                vetor[i + 1]
+            )
+            movimentacoes += 1
+
+        return i + 1
+
+    def ordenar(esquerda, direita):
+        if esquerda < direita:
+            posicao_pivo = particionar(esquerda, direita)
+
+            ordenar(esquerda, posicao_pivo - 1)
+            ordenar(posicao_pivo + 1, direita)
+
+    ordenar(0, len(vetor) - 1)
+
+    return comparacoes, movimentacoes
+
+
+# ============================================================
+# EXPERIMENTO
+# ============================================================
+def executar_experimento(tamanho):
+    # Gera UM único vetor original
+    original = [random.randint(1, 10000) for _ in range(tamanho)]
+
+    # Quatro cópias idênticas
+    vetor_bubble = original.copy()
+    vetor_insertion = original.copy()
+    vetor_selection = original.copy()
+    vetor_quick = original.copy()
+
+    # Executa os algoritmos
+    bubble_comp, bubble_trocas = bubble_sort(vetor_bubble)
+
+    insertion_comp, insertion_mov = insertion_sort(vetor_insertion)
+
+    selection_comp, selection_trocas = selection_sort(vetor_selection)
+
+    quick_comp, quick_mov = quick_sort(vetor_quick)
+
+    # Verifica se todos realmente ordenaram corretamente
+    esperado = sorted(original)
+
+    assert vetor_bubble == esperado
+    assert vetor_insertion == esperado
+    assert vetor_selection == esperado
+    assert vetor_quick == esperado
+
+    return [
+        tamanho,
+        bubble_comp,
+        bubble_trocas,
+        insertion_comp,
+        insertion_mov,
+        selection_comp,
+        selection_trocas,
+        quick_comp,
+        quick_mov
+    ]
+
+
+# ============================================================
+# DESAFIO ADICIONAL
+# ============================================================
+def experimento_desafio(tamanho):
+    aleatorio = [random.randint(1, 10000) for _ in range(tamanho)]
+    ordenado = sorted(aleatorio)
+    inverso = sorted(aleatorio, reverse=True)
+
+    vetores = {
+        "Aleatório": aleatorio,
+        "Ordenado": ordenado,
+        "Inverso": inverso
+    }
+
+    for nome, original in vetores.items():
+
+        print(f"\n--- {nome} ---")
+
+        # Bubble
+        v = original.copy()
+        comp, mov = bubble_sort(v)
+        print(f"Bubble Sort     -> Comparações: {comp}, Trocas: {mov}")
+
+        # Insertion
+        v = original.copy()
+        comp, mov = insertion_sort(v)
+        print(f"Insertion Sort  -> Comparações: {comp}, Mov.: {mov}")
+
+        # Selection
+        v = original.copy()
+        comp, mov = selection_sort(v)
+        print(f"Selection Sort  -> Comparações: {comp}, Trocas: {mov}")
+
+        # Quick
+        v = original.copy()
+        comp, mov = quick_sort(v)
+        print(f"Quick Sort      -> Comparações: {comp}, Mov.: {mov}")
+
+
+# ============================================================
+# PROGRAMA PRINCIPAL
+# ============================================================
+
+resultados = []
+
+for tamanho in [10, 20, 1000]:
+    resultado = executar_experimento(tamanho)
+    resultados.append(resultado)
+
+
+# ============================================================
+# EXIBIÇÃO DA TABELA
+# ============================================================
+
+cabecalho = (
+    f"{'Tamanho':<10}"
+    f"{'Bubble Comp.':<16}"
+    f"{'Bubble Trocas':<16}"
+    f"{'Insertion Comp.':<18}"
+    f"{'Insertion Mov.':<18}"
+    f"{'Selection Comp.':<18}"
+    f"{'Selection Trocas':<19}"
+    f"{'Quick Comp.':<16}"
+    f"{'Quick Mov.':<15}"
+)
+
+print("\n" + "=" * 140)
+print("RESULTADOS DO EXPERIMENTO")
+print("=" * 140)
+print(cabecalho)
+print("-" * 140)
+
+for resultado in resultados:
+    print(
+        f"{resultado[0]:<10}"
+        f"{resultado[1]:<16}"
+        f"{resultado[2]:<16}"
+        f"{resultado[3]:<18}"
+        f"{resultado[4]:<18}"
+        f"{resultado[5]:<18}"
+        f"{resultado[6]:<19}"
+        f"{resultado[7]:<16}"
+        f"{resultado[8]:<15}"
+    )
+
+
+# ============================================================
+# DESAFIO
+# ============================================================
+
+print("\n\n" + "=" * 70)
+print("DESAFIO ADICIONAL - VETOR DE 20 ELEMENTOS")
+print("=" * 70)
+
+experimento_desafio(20)
+
+
+Como ficará a tabela
+Ao executar, o programa produzirá uma tabela neste formato:
+
+Tamanho
+
+Bubble Comp.
+
+Bubble Trocas
+
+Insertion Comp.
+
+Insertion Mov.
+
+Selection Comp.
+
+Selection Trocas
+
+Quick Comp.
+
+Quick Mov.
+
+10
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+20
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+1.000
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+resultado
+
+
+
+
+
+Importante: não preencha essa tabela com números encontrados na internet ou com números inventados. Como o vetor é aleatório, execute o programa e copie os valores apresentados para a tabela do trabalho.
+
+Respostas da análise
+Você pode usar as respostas abaixo como base e ajustar a letra (a), (b) etc. de acordo com os valores que seu programa produzir.
+
+a) Qual algoritmo realizou o menor número de comparações para 10 elementos?
+Para 10 elementos, o resultado deve ser verificado diretamente na tabela gerada pelo programa. Em geral, o Quick Sort tende a apresentar um número menor de comparações, mas isso pode variar bastante para vetores pequenos devido à forma como o pivô é escolhido.
+
+b) Qual algoritmo realizou menos trocas ou movimentações?
+Isso também deve ser identificado comparando a coluna correspondente aos quatro algoritmos.
+
+É comum o Selection Sort apresentar poucas trocas, porque ele procura o menor elemento e realiza, no máximo, uma troca por posição. Porém, ele pode realizar muitas comparações.
+
+c) O comportamento observado para 10 elementos permaneceu semelhante quando o tamanho aumentou para 20?
+Não necessariamente. Com apenas 10 elementos, as diferenças entre os algoritmos podem ser pequenas e até sofrer influência da disposição aleatória dos dados.
+
+Quando o vetor aumenta para 20 elementos, as diferenças começam a ficar mais evidentes. Os algoritmos de complexidade quadrática tendem a aumentar suas operações muito mais rapidamente que o Quick Sort.
+
+d) O que aconteceu com a quantidade de operações quando o vetor passou para 1.000 elementos?
+A quantidade de operações aumentou significativamente.
+
+Bubble Sort, Insertion Sort e Selection Sort possuem comportamento O(n²) em situações típicas. Portanto, quando o tamanho do vetor aumenta, a quantidade de operações cresce aproximadamente de forma quadrática.
+
+Já o Quick Sort apresenta, em média, comportamento O(n log n), fazendo com que seu crescimento seja consideravelmente menor em comparação aos algoritmos quadráticos.
+
+e) Bubble Sort, Insertion Sort e Selection Sort apresentam complexidade O(n²). Eles apresentaram exatamente a mesma quantidade de operações?
+Não.
+
+Ter a mesma complexidade assintótica não significa realizar exatamente a mesma quantidade de operações.
+
+Por exemplo, no Selection Sort, o número de comparações tende a ficar próximo de:
+
+n(n − 1) / 2
+
+independentemente da organização inicial dos dados.
+
+Já o Insertion Sort e o Bubble Sort podem executar quantidades diferentes de operações dependendo da ordem dos elementos. Além disso, cada algoritmo realiza tipos diferentes de operações.
+
+Portanto, dois algoritmos podem ser classificados como O(n²) e ainda assim apresentar números de operações bastante diferentes no experimento.
+
+f) Qual algoritmo apresentou maior crescimento no número de operações?
+Para o vetor aleatório utilizado no experimento, os algoritmos Bubble Sort, Insertion Sort e Selection Sort tendem a apresentar crescimento muito maior que o Quick Sort quando o tamanho aumenta de 20 para 1.000 elementos.
+
+O resultado exato deve ser observado na tabela.
+
+g) Como o comportamento experimental do Quick Sort se diferenciou dos demais algoritmos?
+O Quick Sort apresentou crescimento menor no número de operações à medida que o tamanho do vetor aumentou.
+
+Enquanto os algoritmos quadráticos precisam realizar uma quantidade de operações que cresce aproximadamente proporcional a n², o Quick Sort apresenta, em condições médias, crescimento proporcional a n log n.
+
+Por isso, a diferença fica muito mais perceptível com 1.000 elementos.
+
+h) Os resultados encontrados são coerentes com as complexidades teóricas estudadas?
+Sim.
+
+Os resultados esperados são coerentes com a teoria:
+
+Bubble Sort: O(n²) em situações típicas.
+Insertion Sort: O(n²) no caso médio.
+Selection Sort: O(n²).
+Quick Sort: O(n log n) em média.
+Assim, espera-se que os três primeiros apresentem crescimento muito mais acentuado que o Quick Sort conforme aumenta a quantidade de elementos.
+
+i) Qual algoritmo escolheria para ordenar milhares de pedidos?
+Eu escolheria o Quick Sort, considerando os quatro algoritmos analisados.
+
+Isso ocorre porque, em média, o Quick Sort possui complexidade O(n log n), enquanto Bubble Sort, Insertion Sort e Selection Sort apresentam comportamento O(n²) em situações típicas.
+
+Para milhares de pedidos, essa diferença pode representar uma redução significativa na quantidade de operações e, consequentemente, no tempo necessário para realizar a ordenação.
+
+Desafio adicional
+O desafio mostra uma característica importante: a organização inicial do vetor influencia os algoritmos de maneiras diferentes.
+
+Vetor aleatório
+Os elementos estão misturados. É uma situação intermediária para a maioria dos algoritmos e permite observar o comportamento típico.
+
+Vetor já ordenado
+O Insertion Sort tende a se beneficiar bastante dessa situação, pois os elementos já estão praticamente em suas posições corretas.
+
+O Bubble Sort, dependendo da implementação, também pode se beneficiar. No código apresentado, existe a variável houve_troca, que permite interromper o algoritmo quando nenhuma troca acontece.
+
+O Selection Sort, por outro lado, continua fazendo praticamente todas as comparações mesmo que o vetor já esteja ordenado.
+
+Vetor em ordem inversa
+Essa é uma situação especialmente ruim para o Insertion Sort, pois muitos elementos precisam ser deslocados.
+
+O Bubble Sort também tende a realizar muitas trocas.
+
+O Selection Sort mantém aproximadamente a mesma quantidade de comparações, embora a quantidade de trocas seja relativamente controlada.
+
+O Quick Sort pode variar bastante dependendo da escolha do pivô. Na implementação apresentada, o pivô é o último elemento, então um vetor já ordenado ou em ordem inversa pode produzir um comportamento muito ruim, próximo de O(n²).
+
+Isso é importante: o Quick Sort não é automaticamente O(n log n) em todos os casos. A escolha do pivô influencia diretamente seu desempenho.
+
+Conclusão
+O experimento demonstra que complexidade teórica e quantidade exata de operações são coisas diferentes. Bubble Sort, Insertion Sort e Selection Sort podem possuir comportamento O(n²), mas não necessariamente executam o mesmo número de comparações, trocas ou movimentações.
+
+Com poucos elementos, como 10 ou 20, as diferenças podem ser pequenas. Entretanto, com 1.000 elementos, a diferença de crescimento fica muito mais evidente. Para grandes volumes de pedidos, o Quick Sort tende a ser a opção mais eficiente entre os quatro, desde que sua implementação utilize uma estratégia adequada de escolha do pivô.
